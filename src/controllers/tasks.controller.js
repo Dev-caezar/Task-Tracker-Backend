@@ -1,6 +1,6 @@
 import tasks from "../models/tasks.js";
 
- const createTask = async (req, res) => {
+export const createTask = async (req, res) => {
   try {
     const { title, description, status, priority, dueDate } = req.body;
 
@@ -13,7 +13,7 @@ import tasks from "../models/tasks.js";
       user: req.user.id,
     });
 
-    if (!title || !description || !priority || !dueDate ) {
+    if (!title || !description || !priority || !dueDate) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -21,15 +21,16 @@ import tasks from "../models/tasks.js";
       message: "Task created successfully",
       data: task,
     });
-
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
-const getUserTasks = async ( req,  res) =>{
+export const getUserTasks = async (req, res) => {
   try {
-    const userTask = await tasks.find({user: req.user.id})
+    const userTask = await tasks.find({ user: req.user.id });
 
     if (userTask.length === 0) {
       return res.status(404).json({ message: "No tasks found for this user" });
@@ -38,17 +39,49 @@ const getUserTasks = async ( req,  res) =>{
     res.status(200).json({
       message: "Tasks retrieved successfully",
       data: userTask,
-    })
-
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
-}
+};
 
-const updateTask = async (req, res) =>{
+export const getOneTask = async (req, res) => {
   try {
-    const {id} = req.params;
-    const {title, description, status, priority, dueDate} = req.body;
+    const { id } = req.params;
+
+    const task = await tasks.findById(id);
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    // 🔐 Ensure user can only access their own task
+    if (task.user.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Unauthorized to access this task",
+      });
+    }
+
+    res.status(200).json({
+      message: "Task retrieved successfully",
+      data: task,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, status, priority, dueDate } = req.body;
     const task = await tasks.findById(id);
 
     if (!task) {
@@ -56,9 +89,11 @@ const updateTask = async (req, res) =>{
     }
 
     if (task.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Unauthorized to update this task" });
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update this task" });
     }
-    
+
     task.title = title || task.title;
     task.description = description || task.description;
     task.status = status || task.status;
@@ -68,36 +103,71 @@ const updateTask = async (req, res) =>{
     res.status(200).json({
       message: "Task updated successfully",
       data: task,
-    })
-
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
-}
+};
 
-const getTaskOverview = async (req, res) =>{
+export const getTaskOverview = async (req, res) => {
   try {
-    const userTasks = await tasks.find({user: req.user.id})
+    const userTasks = await tasks.find({ user: req.user.id });
     const totalTasks = userTasks.length;
-    const pendingTasks = userTasks.filter(task => task.status === "pending").length;
-    const inProgressTasks = userTasks.filter(task => task.status === "in-progress").length;
-    const completedTasks = userTasks.filter(task => task.status === "completed").length;
+    const pendingTasks = userTasks.filter(
+      (task) => task.status === "pending",
+    ).length;
+    const inProgressTasks = userTasks.filter(
+      (task) => task.status === "in-progress",
+    ).length;
+    const completedTasks = userTasks.filter(
+      (task) => task.status === "completed",
+    ).length;
     res.status(200).json({
       message: "Task overview retrieved successfully",
       data: {
         totalTasks,
         pendingTasks,
         inProgressTasks,
-        completedTasks
-      }
-    })
+        completedTasks,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
-}
+};
 
-export {
-    createTask,
-    getUserTasks,
-    getTaskOverview,
-}
+export const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const task = await tasks.findById(id);
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    // 🔐 ensure only owner can delete
+    if (task.user.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Unauthorized to delete this task",
+      });
+    }
+
+    await tasks.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Task deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
