@@ -25,7 +25,6 @@ const options = {
       },
     ],
 
-    // 🔐 BEARER TOKEN AUTH SETUP
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -36,7 +35,6 @@ const options = {
       },
     },
 
-    // 🔐 APPLY GLOBALLY (all routes protected by default)
     security: [
       {
         bearerAuth: [],

@@ -34,8 +34,17 @@ const taskSchema = new mongoose.Schema(
       ref: "Users",
       required: true,
     },
+    notifiedOverdue: {
+      type: Boolean,
+      default: false,
+    },
+
+    notifiedUpcoming: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Task", taskSchema);

@@ -52,6 +52,14 @@ const router = Router();
  *     responses:
  *       201:
  *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User created. Check your email for OTP.
+ *               data:
+ *                 id: 123456
+ *                 fullName: John Doe
+ *                 email: john@gmail.com
  *       400:
  *         description: Validation error or user exists
  *       500:
@@ -61,82 +69,245 @@ router.post("/register", registerUser);
 
 /**
  * @swagger
- * /verify-otp:
+ * /users/verify-otp:
  *   post:
  *     summary: Verify account OTP
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@gmail.com
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Account verified
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Account verified successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ *       404:
+ *         description: User not found
  */
 router.post("/verify-otp", verifyOtp);
 
 /**
  * @swagger
- * /resend-otp:
+ * /users/resend-otp:
  *   post:
  *     summary: Resend verification OTP
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@gmail.com
+ *     responses:
+ *       200:
+ *         description: OTP resent
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: OTP resent successfully
+ *       400:
+ *         description: Already verified
+ *       429:
+ *         description: Too many requests
  */
 router.post("/resend-otp", resendOtp);
 
 /**
  * @swagger
- * /login:
+ * /users/login:
  *   post:
  *     summary: Login user
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Login successful
+ *               data:
+ *                 id: 123
+ *                 fullName: John Doe
+ *                 email: john@gmail.com
+ *               token: jwt_token_here
+ *       400:
+ *         description: Invalid credentials
  */
 router.post("/login", loginUser);
 
 /**
  * @swagger
- * /forgot-password:
+ * /users/forgot-password:
  *   post:
  *     summary: Send OTP for password reset
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: john@gmail.com
+ *     responses:
+ *       200:
+ *         description: OTP sent
  */
 router.post("/forgot-password", forgotPassword);
 
 /**
  * @swagger
- * /verify-forgot-otp:
+ * /users/verify-forgot-otp:
  *   post:
  *     summary: Verify OTP for password reset
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OTP verified
  */
 router.post("/verify-forgot-otp", verifyForgotOtp);
 
 /**
  * @swagger
- * /resend-forgot-otp:
+ * /users/resend-forgot-otp:
  *   post:
  *     summary: Resend OTP for password reset
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OTP resent
  */
 router.post("/resend-forgot-otp", resendForgotOtp);
 
 /**
  * @swagger
- * /reset-password:
+ * /users/reset-password:
  *   post:
  *     summary: Reset user password
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successful
  */
 router.post("/reset-password", resetPassword);
 
 /**
  * @swagger
- * /allUsers:
+ * /users/allUsers:
  *   get:
  *     summary: Get all users
  *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Users retrieved
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Users retrieved successfully
+ *               data: []
  */
 router.get("/allUsers", getAllUsers);
 
 /**
  * @swagger
- * /{id}:
+ * /users/{id}:
  *   get:
  *     summary: Get single user by ID
  *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: 64f123abc123
+ *     responses:
+ *       200:
+ *         description: User retrieved
+ *       404:
+ *         description: User not found
  */
 router.get("/:id", getOneUser);
 

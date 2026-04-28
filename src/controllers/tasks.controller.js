@@ -1,8 +1,13 @@
+import { io } from "../index.js";
 import tasks from "../models/tasks.js";
 
 export const createTask = async (req, res) => {
   try {
     const { title, description, status, priority, dueDate } = req.body;
+
+    if (!title || !description || !priority || !dueDate) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
     const task = await tasks.create({
       title,
@@ -13,21 +18,22 @@ export const createTask = async (req, res) => {
       user: req.user.id,
     });
 
-    if (!title || !description || !priority || !dueDate) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+    io.to(req.user.id).emit("task:created", {
+      message: "Task created successfully",
+      task,
+    });
 
     res.status(201).json({
       message: "Task created successfully",
       data: task,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };
-
 export const getUserTasks = async (req, res) => {
   try {
     const userTask = await tasks.find({ user: req.user.id });
@@ -50,16 +56,13 @@ export const getUserTasks = async (req, res) => {
 export const getOneTask = async (req, res) => {
   try {
     const { id } = req.params;
-
     const task = await tasks.findById(id);
-
     if (!task) {
       return res.status(404).json({
         message: "Task not found",
       });
     }
 
-    // 🔐 Ensure user can only access their own task
     if (task.user.toString() !== req.user.id) {
       return res.status(403).json({
         message: "Unauthorized to access this task",
@@ -152,7 +155,6 @@ export const deleteTask = async (req, res) => {
       });
     }
 
-    // 🔐 ensure only owner can delete
     if (task.user.toString() !== req.user.id) {
       return res.status(403).json({
         message: "Unauthorized to delete this task",
@@ -160,7 +162,6 @@ export const deleteTask = async (req, res) => {
     }
 
     await tasks.findByIdAndDelete(id);
-
     res.status(200).json({
       message: "Task deleted successfully",
     });
