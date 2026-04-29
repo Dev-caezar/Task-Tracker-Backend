@@ -3,6 +3,7 @@ import {
   forgotPassword,
   getAllUsers,
   getOneUser,
+  getUserProfile,
   loginUser,
   registerUser,
   resendForgotOtp,
@@ -11,6 +12,7 @@ import {
   verifyForgotOtp,
   verifyOtp,
 } from "../controllers/users.controller.js";
+import { authenciateUser } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -272,6 +274,66 @@ router.post("/resend-forgot-otp", resendForgotOtp);
  *         description: Password reset successful
  */
 router.post("/reset-password", resetPassword);
+
+/**
+ * @swagger
+ * /users/profile:
+ *   get:
+ *     summary: Get current user's profile
+ *     description: Returns the authenticated user's profile using JWT token
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "661f1c9a8f1b2c0012345678"
+ *                     fullName:
+ *                       type: string
+ *                       example: "Oko Christian"
+ *                     email:
+ *                       type: string
+ *                       example: "oko@email.com"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2026-04-20T10:00:00.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2026-04-20T10:00:00.000Z"
+ *       401:
+ *         description: Unauthorized - No token or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+router.get("/profile", authenciateUser, getUserProfile);
 
 /**
  * @swagger
