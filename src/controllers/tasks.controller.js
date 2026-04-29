@@ -134,6 +134,14 @@ export const getTaskOverview = async (req, res) => {
         pendingTasks,
         inProgressTasks,
         completedTasks,
+        tasks: userTasks.map((task) => ({
+          id: task._id,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          priority: task.priority,
+          dueDate: task.dueDate,
+        })),
       },
     });
   } catch (error) {
