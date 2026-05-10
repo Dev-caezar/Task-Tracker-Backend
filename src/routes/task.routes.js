@@ -6,6 +6,7 @@ import {
   getTaskOverview,
   getUserTasks,
   updateTask,
+  markTaskAsCompleted,
 } from "../controllers/tasks.controller.js";
 import { authenciateUser } from "../middleware/auth.js";
 
@@ -13,7 +14,7 @@ const router = Router();
 
 /**
  * @swagger
- * /tasks/create:
+ * /tasks:
  *   post:
  *     summary: Create a new task
  *     tags: [Tasks]
@@ -67,11 +68,11 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.post("/create", authenciateUser, createTask);
+router.post("/", authenciateUser, createTask);
 
 /**
  * @swagger
- * /tasks/:
+ * /tasks:
  *   get:
  *     summary: Get all tasks for logged-in user
  *     tags: [Tasks]
@@ -249,5 +250,42 @@ router.patch("/:id", authenciateUser, updateTask);
  *         description: Internal server error
  */
 router.delete("/:id", authenciateUser, deleteTask);
+
+/**
+ * @swagger
+ * /tasks/{id}/complete:
+ *   patch:
+ *     summary: Mark a task as completed
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Task ID to mark as completed
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Task marked as completed successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Task marked as completed
+ *               data:
+ *                 _id: "taskId123"
+ *                 title: "Build Task API"
+ *                 status: "completed"
+ *       401:
+ *         description: Unauthorized (no token or invalid token)
+ *       403:
+ *         description: Unauthorized to update this task
+ *       404:
+ *         description: Task not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch("/:id/complete", authenciateUser, markTaskAsCompleted);
 
 export default router;

@@ -114,6 +114,41 @@ export const updateTask = async (req, res) => {
   }
 };
 
+export const markTaskAsCompleted = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await tasks.findById(id);
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    if (task.user.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Unauthorized to update this task",
+      });
+    }
+
+    task.status = "completed";
+    await task.save();
+
+    io.to(req.user.id).emit("task:completed", {
+      message: "Task marked as completed",
+      task,
+    });
+
+    res.status(200).json({
+      message: "Task marked as completed",
+      data: task,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 export const getTaskOverview = async (req, res) => {
   try {
     const userTasks = await tasks.find({ user: req.user.id });
