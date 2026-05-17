@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import tasks from "../models/tasks.js";
 import { Notification } from "../models/notification.js";
+import { io } from "../index.js";
 
 export const startTaskNotifier = () => {
   cron.schedule("* * * * *", async () => {
@@ -16,14 +17,17 @@ export const startTaskNotifier = () => {
     for (const task of overdueTasks) {
       console.log("Overdue:", task.title);
 
-      await Notification.create({
+      const notification = await Notification.create({
         user: task.user,
         type: "overdue",
         message: `Task "${task.title}" is overdue`,
         task: task._id,
       });
 
+      io.to(task.user.toString()).emit("task:overdue", notification);
+
       task.notifiedOverdue = true;
+
       await task.save();
     }
 
@@ -38,14 +42,17 @@ export const startTaskNotifier = () => {
     for (const task of upcomingTasks) {
       console.log("Upcoming:", task.title);
 
-      await Notification.create({
+      const notification = await Notification.create({
         user: task.user,
         type: "upcoming",
         message: `Task "${task.title}" is due soon`,
         task: task._id,
       });
 
+      io.to(task.user.toString()).emit("task:upcoming", notification);
+
       task.notifiedUpcoming = true;
+
       await task.save();
     }
   });
