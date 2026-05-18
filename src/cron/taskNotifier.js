@@ -20,7 +20,7 @@ export const startTaskNotifier = () => {
       const notification = await Notification.create({
         user: task.user,
         type: "overdue",
-        message: `Task "${task.title}" is overdue`,
+        message: `${task.title} is overdue`,
         task: task._id,
       });
 
@@ -45,7 +45,7 @@ export const startTaskNotifier = () => {
       const notification = await Notification.create({
         user: task.user,
         type: "upcoming",
-        message: `Task "${task.title}" is due soon`,
+        message: `${task.title} is due soon`,
         task: task._id,
       });
 
